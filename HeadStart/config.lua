@@ -1,0 +1,15 @@
+return {
+	enabled = true,
+	negative_jokers = false,
+	dollars = 3,
+	hands = 2,
+	discards = 2,
+	joker_slots = 2,
+	consumable_slots = 2,
+	hand_size = 2,
+	joker_count = 3,
+	joker_rarity = 3,
+	spectrals = 1,
+	codes = 2,
+	vouchers = 2,
+}

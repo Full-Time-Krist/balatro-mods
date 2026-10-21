@@ -1,0 +1,14 @@
+{
+	"id": "HeadStart",
+	"name": "Head Start",
+	"display_name": "Head Start",
+	"author": ["Krist"],
+	"description": "Configurable starting bonuses for every run: money, hands, slots, jokers, consumables and vouchers.",
+	"prefix": "hsbase",
+	"main_file": "HeadStart.lua",
+	"priority": 200,
+	"badge_colour": "D4A017",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}

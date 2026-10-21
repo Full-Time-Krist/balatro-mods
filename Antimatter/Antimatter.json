@@ -1,0 +1,14 @@
+{
+	"id": "Antimatter",
+	"name": "Antimatter",
+	"display_name": "Антиматерия",
+	"author": ["Krist"],
+	"description": "\"Все в одном\" joker, Antimatter++ deck and sleeve, antimatter seal, sticker, enhancement, edition and suit, Equality deck.",
+	"prefix": "hstart",
+	"main_file": "main.lua",
+	"priority": 200,
+	"badge_colour": "9B5DE5",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}

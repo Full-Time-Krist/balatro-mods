@@ -1,0 +1,14 @@
+{
+	"id": "RuFill",
+	"name": "RuFill",
+	"display_name": "Русификатор модов",
+	"author": ["Krist"],
+	"description": "Fills in missing Russian translations for installed mods.",
+	"prefix": "rufill",
+	"main_file": "RuFill.lua",
+	"priority": 1e30,
+	"badge_colour": "3060C0",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}
