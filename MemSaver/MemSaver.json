@@ -1,0 +1,14 @@
+{
+	"id": "MemSaver",
+	"name": "MemSaver",
+	"display_name": "Экономия памяти",
+	"author": ["Krist"],
+	"description": "Loads mod atlases and sound effects on first use instead of at startup, and frees unused atlases on main menu / run start. Lets big modpacks fit in RAM.",
+	"prefix": "memsaver",
+	"main_file": "main.lua",
+	"priority": -1000000000000000,
+	"badge_colour": "3A86FF",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-1503a)"]
+}
