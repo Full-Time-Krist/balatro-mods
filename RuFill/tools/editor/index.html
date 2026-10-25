@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RuFill — перевод</title>
+<style>
+  :root {
+    --bg: #1b2326; --panel: #243034; --panel2: #2c3a3f; --line: #3a4a50;
+    --text: #e8ecec; --dim: #8fa3a8; --accent: #fe9a00; --ok: #4bc292; --bad: #fe5f55;
+    --input: #162023;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0 8px 0 0; color: var(--accent); }
+  header .grow { flex: 1; }
+  button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; font: inherit; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: #b25f00; border-color: #e07a00; }
+  #total { color: var(--dim); }
+  #rfpath { color: var(--dim); font-size: 12px; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; }
+  #rfpath.missing { color: var(--bad); direction: ltr; }
+  main { flex: 1; display: flex; min-height: 0; }
+  #files { width: 230px; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line); }
+  .file { padding: 7px 12px; cursor: pointer; border-bottom: 1px solid #2a363a; }
+  .file:hover { background: var(--panel2); }
+  .file.active { background: #33454b; border-left: 3px solid var(--accent); padding-left: 9px; }
+  .file .row { display: flex; justify-content: space-between; }
+  .file .labels { color: var(--dim); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar { height: 4px; background: #1a2427; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .bar > div { height: 100%; background: var(--ok); }
+  #content { flex: 1; overflow-y: auto; padding: 12px 18px 80px; }
+  #toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; position: sticky; top: -12px; background: var(--bg); padding: 8px 0; z-index: 2; }
+  #toolbar input[type=search] { flex: 1; background: var(--input); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font: inherit; }
+  label.chk { color: var(--dim); white-space: nowrap; }
+  .entry { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px; padding: 10px 12px; }
+  .entry.done { border-color: #2f5a49; }
+  .entry h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--dim); display: flex; gap: 8px; align-items: baseline; }
+  .entry h3 .key { color: var(--text); }
+  .entry h3 .warn { color: var(--bad); font-weight: 600; }
+  .ln { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 10px; align-items: start; padding: 3px 0; }
+  .ln .p { color: var(--dim); font-size: 12px; padding-top: 6px; font-family: ui-monospace, monospace; }
+  .ln .en { padding: 5px 8px; background: #1e292c; border-radius: 5px; word-break: break-word; }
+  .ln.ctx .en { opacity: .55; }
+  .ln .ruwrap { display: flex; flex-direction: column; gap: 3px; }
+  .ln textarea { width: 100%; resize: vertical; min-height: 32px; background: var(--input); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 5px 8px; font: inherit; }
+  .ln textarea:focus { outline: none; border-color: var(--accent); }
+  .ln textarea.filled { border-color: #2f5a49; }
+  .ln textarea.bad { border-color: var(--bad); }
+  .ln .prev { font-size: 13px; padding: 2px 8px; min-height: 1em; }
+  .ln .tools { display: flex; gap: 6px; font-size: 12px; color: var(--dim); }
+  .ln .tools a { cursor: pointer; color: var(--dim); }
+  .ln .tools a:hover { color: var(--accent); }
+  .ln .tools .stale { color: var(--accent); }
+  .var { color: #ffd166; background: #3a3420; border-radius: 3px; padding: 0 2px; }
+  .tag { padding: 0 3px; border-radius: 3px; }
+  #glossary { width: 250px; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 10px 12px; font-size: 13px; }
+  #glossary h2 { font-size: 14px; margin: 4px 0 8px; color: var(--accent); }
+  #glossary dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; }
+  #glossary dt { color: var(--dim); }
+  #glossary dd { margin: 0; }
+  #glossary p { color: var(--dim); }
+  #status { position: fixed; bottom: 12px; right: 270px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; max-width: 520px; white-space: pre-wrap; display: none; z-index: 5; }
+  #status.err { border-color: var(--bad); }
+  .empty { color: var(--dim); padding: 40px; text-align: center; }
+  kbd { background: #11191b; border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; font-size: 12px; }
+  @media (max-width: 1100px) { #glossary { display: none; } #status { right: 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>RuFill</h1>
+  <span id="total"></span>
+  <span class="grow"></span>
+  <span id="rfpath" title="Сюда собирается ru.lua"></span>
+  <button id="btnDir" title="Указать папку мода RuFill (в ней лежит RuFill.json)">Папка RuFill</button>
+  <button id="btnRequest" title="Создать rufill_dump_request: при следующем запуске игра выгрузит непереведённые строки и закроется">Запросить выгрузку</button>
+  <button id="btnRefresh" title="Загрузить свежий rufill_dump.lua из папки сохранений">Обновить из выгрузки</button>
+  <button id="btnBuild" class="primary" title="Собрать RuFill/localization/ru.lua из переводов">Собрать ru.lua</button>
+</header>
+<main>
+  <nav id="files"></nav>
+  <section id="content"><div class="empty">Выберите файл слева</div></section>
+  <aside id="glossary">
+    <h2>Клавиши</h2>
+    <p><kbd>Enter</kbd> — следующая строка<br><kbd>Shift+Enter</kbd> — предыдущая<br><kbd>Ctrl+Enter</kbd> — скопировать оригинал<br>Сохраняется само.</p>
+    <p>Теги <code>{C:mult}</code>, <code>{}</code> и переменные <code>#1#</code> оставляйте как есть, переставлять внутри строки можно. Перенос строки внутри текста — <code>\n</code>.</p>
+    <h2>Словарь</h2>
+    <dl id="gl"></dl>
+  </aside>
+</main>
+<div id="status"></div>
+<script>
+const GLOSSARY = [
+  ["Mult", "множ."], ["Chips", "фишки"], ["+4 Mult", "+4 множ."], ["X2 Mult", "X2 множ."],
+  ["Joker", "джокер"], ["Blind", "блайнд"], ["Boss Blind", "босс-блайнд"], ["Small / Big Blind", "малый / большой блайнд"],
+  ["Ante", "анте"], ["Round", "раунд"], ["Hand", "рука"], ["Hand size", "размер руки"], ["Discard", "сброс"],
+  ["Poker hand", "покерная рука"], ["played", "разыгранный"], ["scored", "подсчитан(ный)"], ["held in hand", "в руке"],
+  ["Retrigger", "перезапуск"], ["Consumable", "расходник"], ["Edition", "издание"], ["Enhancement", "улучшение"],
+  ["Seal", "печать"], ["Sticker", "наклейка"], ["Voucher", "ваучер"], ["Tag", "метка"], ["Booster Pack", "набор"],
+  ["Tarot", "таро"], ["Planet", "планета"], ["Spectral", "спектральная"], ["Stake", "ставка"], ["Deck", "колода"],
+  ["Sleeve", "рукав"], ["Rank / Suit", "ранг / масть"], ["Face card", "карта с лицом"], ["Debuffed", "ослаблен(а)"],
+  ["Destroy", "уничтожить"], ["Create", "создаёт"], ["1 in 4 chance", "шанс 1 из 4"], ["(Currently #1#)", "(Сейчас: #1#)"],
+  ["(Must have room)", "(Нужно свободное место)"], ["Negative", "негатив"], ["Polychrome", "полихром"],
+  ["Holographic", "голографический"], ["Foil", "фольга"], ["Eternal", "вечный"], ["Perishable", "скоропортящийся"],
+  ["Rental", "аренда"], ["Common / Uncommon", "обычный / необычный"], ["Rare / Legendary", "редкий / легендарный"],
+  ["Shop", "магазин"], ["Reroll", "реролл"], ["Sell value", "цена продажи"], ["Interest", "проценты"],
+];
+document.getElementById("gl").innerHTML = GLOSSARY.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
+
+const COLORS = {
+  mult: "#fe5f55", red: "#fe5f55", chips: "#009dff", blue: "#009dff", money: "#f3b958", gold: "#eac058",
+  attention: "#ff9a00", important: "#ff9a00", orange: "#ff9a00", green: "#4bc292", uncommon: "#4bc292",
+  inactive: "#8a9a9e", white: "#ffffff", black: "#374244", grey: "#8a9a9e", purple: "#8867a5",
+  dark_edition: "#7d7dff", edition: "#7d7dff", legendary: "#b26cbb", rare: "#fe5f55", common: "#009dff",
+  tarot: "#a782d1", planet: "#13afce", spectral: "#4584fa", hearts: "#f03464", diamonds: "#f06b3f",
+  spades: "#6a62c9", clubs: "#3f8f86", yellow: "#f3b958", filter: "#ff9a00",
+};
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function colorOf(name) {
+  if (!name) return null;
+  if (COLORS[name]) return COLORS[name];
+  const tail = name.replace(/^[a-z0-9]+_/, "");
+  return COLORS[tail] || "#c9b8ff";
+}
+// Render Balatro's {C:x}/{X:x}/{} markup and #n# variables as coloured HTML.
+function render(text) {
+  let out = "", open = false;
+  const parts = text.split(/(\{[^}]*\}|#\d+#)/);
+  for (const part of parts) {
+    if (!part) continue;
+    if (part[0] === "{" && part.at(-1) === "}") {
+      if (open) { out += "</span>"; open = false; }
+      const body = part.slice(1, -1);
+      if (!body) continue;
+      let style = "";
+      for (const kv of body.split(",")) {
+        const [k, v] = kv.split(":");
+        if (k === "C") style += `color:${colorOf(v)};`;
+        if (k === "X") style += `background:${colorOf(v)};`;
+        if (k === "s" && +v) style += `font-size:${Math.max(70, Math.min(140, +v * 100))}%;`;
+      }
+      out += `<span class="tag" style="${style}">`;
+      open = true;
+    } else if (/^#\d+#$/.test(part)) {
+      out += `<span class="var">${part}</span>`;
+    } else {
+      out += esc(part.replace(/\\n/g, " ⏎ "));
+    }
+  }
+  if (open) out += "</span>";
+  return out;
+}
+function varsOf(s) { return (s.match(/#\d+#/g) || []).sort().join(","); }
+function braces(s) { return (s.match(/\{/g) || []).length === (s.match(/\}/g) || []).length; }
+
+const api = {
+  get: (u) => fetch(u).then(r => r.json()),
+  post: (u, body) => fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) }).then(r => r.json()),
+};
+const statusEl = document.getElementById("status");
+let statusTimer;
+function status(msg, err, sticky) {
+  statusEl.textContent = msg;
+  statusEl.className = err ? "err" : "";
+  statusEl.style.display = "block";
+  clearTimeout(statusTimer);
+  if (!sticky) statusTimer = setTimeout(() => statusEl.style.display = "none", err ? 8000 : 2500);
+}
+
+let state = { files: [] }, current = null, dirty = new Map(), saveTimer;
+const filesEl = document.getElementById("files"), contentEl = document.getElementById("content");
+
+async function loadState() {
+  state = await api.get("/api/state");
+  if (state.error) return status(state.error, true);
+  const rp = document.getElementById("rfpath");
+  rp.textContent = state.rufill_dir || "RuFill не найден";
+  rp.className = state.rufill_dir ? "" : "missing";
+  const t = state.files.reduce((a, f) => [a[0] + f.done, a[1] + f.total], [0, 0]);
+  document.getElementById("total").textContent = state.files.length
+    ? `Переведено ${t[0]} из ${t[1]} строк (${t[1] ? Math.floor(t[0] * 100 / t[1]) : 0}%)` : "Нет выгрузки — нажмите «Запросить выгрузку» и запустите игру";
+  filesEl.innerHTML = state.files.map(f => `
+    <div class="file ${current === f.name ? "active" : ""}" data-name="${f.name}">
+      <div class="row"><b>${f.name.replace(".txt", "")}</b><span>${f.done}/${f.total}</span></div>
+      <div class="labels">${esc(f.labels.join(", "))}</div>
+      <div class="bar"><div style="width:${f.total ? f.done * 100 / f.total : 100}%"></div></div>
+    </div>`).join("");
+}
+filesEl.addEventListener("click", e => { const f = e.target.closest(".file"); if (f) openFile(f.dataset.name); });
+
+async function openFile(name) {
+  await flush();
+  current = name;
+  try { localStorage.setItem("rufill-file", name); } catch {}
+  const data = await api.get("/api/file?name=" + encodeURIComponent(name));
+  if (data.error) return status(data.error, true);
+  contentEl.innerHTML = `
+    <div id="toolbar">
+      <input type="search" id="search" placeholder="Поиск по ключу, оригиналу или переводу">
+      <label class="chk"><input type="checkbox" id="onlyTodo"> только непереведённое</label>
+    </div>` + data.entries.map((en, i) => entryHtml(en, i)).join("");
+  for (const box of contentEl.querySelectorAll(".entry")) checkEntry(box);
+  document.getElementById("search").addEventListener("input", applyFilter);
+  document.getElementById("onlyTodo").addEventListener("change", applyFilter);
+  contentEl.scrollTop = 0;
+  loadState();
+}
+
+function entryHtml(entry, i) {
+  const [top, set, key] = entry.header.split("|");
+  const title = top === "descriptions" ? `<span>${esc(set)}</span><span class="key">${esc(key)}</span>` : `<span class="key">${esc(entry.header)}</span>`;
+  const lines = entry.lines.map(l => {
+    const k = entry.header + "|" + l.path;
+    if (!l.needs) return `<div class="ln ctx"><div class="p">${esc(l.path)}</div><div class="en">${render(l.en)}</div><div></div></div>`;
+    return `<div class="ln" data-key="${esc(k)}">
+      <div class="p">${esc(l.path)}</div>
+      <div class="en">${render(l.en)}</div>
+      <div class="ruwrap">
+        <textarea rows="1" data-en="${esc(l.en)}" spellcheck="true" lang="ru">${esc(l.ru)}</textarea>
+        <div class="prev">${l.ru ? render(l.ru) : ""}</div>
+        <div class="tools"><a data-act="copy">⇩ оригинал</a>${l.stale ? '<span class="stale">⚠ оригинал изменился</span>' : ""}</div>
+      </div></div>`;
+  }).join("");
+  return `<div class="entry" data-search="${esc((entry.header + " " + entry.lines.map(l => l.en + " " + l.ru).join(" ")).toLowerCase())}">
+    <h3>${title}<span class="warn"></span></h3>${lines}</div>`;
+}
+
+function checkEntry(box) {
+  let en = "", mixed = "", allDone = true, badBraces = false;
+  for (const ln of box.querySelectorAll(".ln")) {
+    const enText = ln.querySelector(".en").textContent;
+    const ta = ln.querySelector("textarea");
+    if (!ta) continue;
+    const ru = ta.value.trim();
+    const src = ta.dataset.en;
+    en += src; mixed += ru || src;
+    if (!ru) allDone = false;
+    const bad = ru && !braces(ru);
+    if (bad) badBraces = true;
+    ta.classList.toggle("filled", !!ru && !bad);
+    ta.classList.toggle("bad", !!bad);
+  }
+  const msgs = [];
+  if (varsOf(en) !== varsOf(mixed)) msgs.push(`переменные: ${varsOf(en) || "—"} → ${varsOf(mixed) || "—"}`);
+  if (badBraces) msgs.push("незакрытая скобка {");
+  box.querySelector(".warn").textContent = msgs.join("; ");
+  box.classList.toggle("done", allDone && !msgs.length);
+}
+
+function applyFilter() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const todo = document.getElementById("onlyTodo").checked;
+  for (const box of contentEl.querySelectorAll(".entry")) {
+    const hit = !q || box.dataset.search.includes(q) || [...box.querySelectorAll("textarea")].some(t => t.value.toLowerCase().includes(q));
+    box.style.display = hit && !(todo && box.classList.contains("done")) ? "" : "none";
+  }
+}
+
+contentEl.addEventListener("input", e => {
+  const ta = e.target;
+  if (ta.tagName !== "TEXTAREA") return;
+  const ln = ta.closest(".ln");
+  ln.querySelector(".prev").innerHTML = ta.value ? render(ta.value) : "";
+  checkEntry(ta.closest(".entry"));
+  dirty.set(ln.dataset.key, { key: ln.dataset.key, en: ta.dataset.en, ru: ta.value.trim() });
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, 700);
+});
+contentEl.addEventListener("click", e => {
+  const a = e.target.closest("a[data-act=copy]");
+  if (!a) return;
+  const ta = a.closest(".ruwrap").querySelector("textarea");
+  ta.value = ta.dataset.en; ta.dispatchEvent(new Event("input", { bubbles: true })); ta.focus();
+});
+contentEl.addEventListener("keydown", e => {
+  const ta = e.target;
+  if (ta.tagName !== "TEXTAREA") return;
+  if (e.key === "Enter" && e.ctrlKey) {
+    e.preventDefault();
+    ta.value = ta.dataset.en; ta.dispatchEvent(new Event("input", { bubbles: true }));
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    const all = [...contentEl.querySelectorAll("textarea")].filter(t => t.closest(".entry").style.display !== "none");
+    const next = all[all.indexOf(ta) + (e.shiftKey ? -1 : 1)];
+    if (next) { next.focus(); next.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  }
+});
+
+async function flush() {
+  clearTimeout(saveTimer);
+  if (!dirty.size) return;
+  const items = [...dirty.values()];
+  dirty.clear();
+  const r = await api.post("/api/save", { items });
+  if (r.error) { status("Не сохранилось: " + r.error, true); items.forEach(i => dirty.set(i.key, i)); return; }
+  loadState();
+}
+window.addEventListener("beforeunload", e => { if (dirty.size) { flush(); e.preventDefault(); } });
+document.addEventListener("keydown", e => { if (e.key === "s" && e.ctrlKey) { e.preventDefault(); flush().then(() => status("Сохранено")); } });
+
+document.getElementById("btnBuild").onclick = async () => {
+  await flush();
+  status("Собираю ru.lua…", false, true);
+  const r = await api.post("/api/build");
+  status(r.error ? "Ошибка сборки:\n" + r.error : r.log + "\n\nПерезапустите игру, чтобы увидеть перевод.", !!r.error);
+};
+document.getElementById("btnRefresh").onclick = async () => {
+  await flush();
+  if (!confirm("Загрузить свежую выгрузку из игры? Ваши переводы сохранятся.")) return;
+  const r = await api.post("/api/refresh");
+  status(r.error ? r.error : "Выгрузка обновлена (" + r.log + ")", !!r.error);
+  current = null; contentEl.innerHTML = '<div class="empty">Выберите файл слева</div>';
+  loadState();
+};
+document.getElementById("btnDir").onclick = async () => {
+  const p = prompt("Путь к папке RuFill (или к папке Mods, где она лежит).\nНапример: C:\\Games\\Balatro\\Mods\\RuFill", state.rufill_dir || "");
+  if (!p) return;
+  const r = await api.post("/api/config", { rufill_dir: p });
+  status(r.error ? r.error : "Папка RuFill сохранена", !!r.error);
+  loadState();
+};
+document.getElementById("btnRequest").onclick = async () => {
+  const r = await api.post("/api/request_dump");
+  status(r.error ? r.error : "Готово. Запустите игру: в главном меню она выгрузит строки и закроется.\nПотом нажмите «Обновить из выгрузки».", !!r.error, !r.error);
+};
+
+loadState().then(() => {
+  let last = null;
+  try { last = localStorage.getItem("rufill-file"); } catch {}
+  const pick = state.files.find(f => f.name === last) || state.files.find(f => f.done < f.total);
+  if (pick) openFile(pick.name);
+});
+</script>
+</body>
+</html>

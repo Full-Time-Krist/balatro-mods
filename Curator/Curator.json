@@ -1,0 +1,14 @@
+{
+	"id": "Curator",
+	"name": "Curator",
+	"display_name": "Куратор сборки",
+	"author": ["Krist"],
+	"description": "Removes duplicate jokers/consumables between mods from the pools and patches cross-mod incompatibilities.",
+	"prefix": "curator",
+	"main_file": "Curator.lua",
+	"priority": 1e29,
+	"badge_colour": "6A4FB0",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}

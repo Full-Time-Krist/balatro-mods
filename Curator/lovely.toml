@@ -1,0 +1,15 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# MoreFluff 1.x removed its global mf_config (Colour Cards are always on now), but SDM0 and
+# LobotomyCorp still read it while loading. Define it before any mod loads.
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = "function love.load() "
+position = "before"
+payload = '''mf_config = mf_config or { ["Colour Cards"] = true } -- Curator: compat for SDM0 / LobotomyCorp'''
+match_indent = true
+times = 1
