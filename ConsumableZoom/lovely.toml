@@ -1,0 +1,15 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Draw the opened consumable grid after every card area, so it sits on top of
+# the jokers and the hand instead of underneath them. Popups (tooltips) are
+# drawn later still and stay on top of the grid.
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = 'for k, v in pairs(self.I.CARD) do'
+position = 'before'
+match_indent = true
+payload = 'if ConsumableZoom then ConsumableZoom.draw_late() end'

@@ -1,0 +1,18 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10
+
+# Ortalab's tags-in-shop patch (lovely/coupons.toml, priority 1) turns a tag into
+# a Card and gives it pixel_size, but vanilla tags in G.P_TAGS have no atlas, so
+# Steamodded's sizing code does SMODS.get_atlas(nil).py and crashes in
+# Card:set_ability. Give them the default tag atlas. Runs after Ortalab's patch.
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = 'center.pixel_size = {w = 32, h = 32}'
+position = 'after'
+match_indent = true
+payload = '''
+center.atlas = center.atlas or 'tags'
+'''

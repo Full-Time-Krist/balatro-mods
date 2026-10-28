@@ -1,0 +1,14 @@
+{
+	"id": "ConsumableZoom",
+	"name": "Consumable Zoom",
+	"display_name": "Обзор карт",
+	"author": ["Krist"],
+	"description": "A button under the consumable slots, the joker slots and opened booster packs shows all their cards full size in a grid. Cards stay usable, sellable and draggable.",
+	"prefix": "czoom",
+	"main_file": "ConsumableZoom.lua",
+	"priority": 0,
+	"badge_colour": "4A5A9A",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}

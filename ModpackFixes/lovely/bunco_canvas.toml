@@ -1,0 +1,17 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 20
+
+# Bunco's forcefield shader (lovely.toml, priority 10) switches back to the main
+# canvas without Steamodded's depth/stencil buffer. Any popup with a scroll area
+# drawn after it then crashes in SMODS.push_to_stencil_stack ("Drawing to the
+# stencil buffer with a Canvas active requires either stencil=true...").
+# Restore the canvas the way Steamodded sets it up. Runs after Bunco's patch.
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = 'love.graphics.setCanvas(self.CANVAS) -- Forget about the black hole canvas*'
+position = 'at'
+match_indent = true
+payload = 'love.graphics.setCanvas{self.CANVAS, depthstencil = SMODS.stencil_canvas}'

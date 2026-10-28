@@ -1,0 +1,57 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Bunco inserts a stake reorder (lovely/stake_fix_patch.toml) that expects the
+# stake pool in ascending order, but current Steamodded leaves it sorted
+# descending at that point, so Bunco reverses every stake (White ends up last
+# and "stake 1" becomes the hardest modded stake). Restore ascending order first.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/game_object.lua"]'
+pattern = 'local reordered_stakes = {}'
+position = 'before'
+match_indent = true
+payload = '''
+table.sort(G.P_CENTER_POOLS[self.set], function(a, b) return a.order < b.order end)
+'''
+
+# Entropy's "link" hooks (add_sticker, set_seal, ...) walk G.hand/G.discard/G.deck,
+# which don't exist in the run setup menu, so previewing a linked card on
+# Cryptid's sticker deck page crashes. Treat missing areas as empty.
+[[patches]]
+[patches.regex]
+target = '=[SMODS entr "lib/hooks.lua"]'
+pattern = '\{G\.hand\.cards, G\.discard\.cards, G\.deck\.cards\}'
+position = 'at'
+payload = '{G.hand and G.hand.cards or {}, G.discard and G.discard.cards or {}, G.deck and G.deck.cards or {}}'
+
+# Entropy's Dark enhancement counts the suits of played cards; a played card
+# without a suit (e.g. a non-playing card from Cryptid's Equilibrium deck) makes
+# suits[nil] = true and crashes. Skip cards without a suit.
+[[patches]]
+[patches.regex]
+target = '=[SMODS entr "items/misc/enhancements.lua"]'
+pattern = 'if not suits\[v\.base\.suit\] then'
+position = 'at'
+payload = 'if v.base.suit and not suits[v.base.suit] then'
+
+# Entropy's Entropy.invert (used by Flipside etc.) has a second code path for
+# when animations are skipped that reads c.center.price (nil, should be
+# c.children.price) and assumes the card's calculate always returns a table.
+# Both crash; make it match the animated path.
+[[patches]]
+[patches.pattern]
+target = '=[SMODS entr "lib/utils.lua"]'
+pattern = 'local shop = c.center.price'
+position = 'at'
+match_indent = true
+payload = 'local shop = c.children.price or nil'
+
+[[patches]]
+[patches.regex]
+target = '=[SMODS entr "lib/utils.lua"]'
+pattern = 'ret = c\.config\.center:calculate\(c, \{being_inverted = true\}\)\r?\n'
+position = 'at'
+payload = "ret = c.config.center:calculate(c, {being_inverted = true}) or {}\n"

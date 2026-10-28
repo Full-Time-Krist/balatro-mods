@@ -1,0 +1,14 @@
+{
+	"id": "WASDNav",
+	"name": "WASD Navigation",
+	"display_name": "Управление WASD",
+	"author": ["Krist"],
+	"description": "Drives the game's gamepad controls from the keyboard: WASD moves the selection over every menu, card and button, Space presses. Moving the mouse switches back to mouse control.",
+	"prefix": "wasdnav",
+	"main_file": "WASDNav.lua",
+	"priority": 0,
+	"badge_colour": "4A7A5A",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}

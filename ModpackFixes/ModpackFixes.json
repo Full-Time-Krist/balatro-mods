@@ -1,0 +1,14 @@
+{
+	"id": "ModpackFixes",
+	"name": "Modpack Fixes",
+	"display_name": "Фиксы сборки",
+	"author": ["Krist"],
+	"description": "Compatibility fixes for this modpack (Entropy, Ortalab, Cryptid, MoreFluff).",
+	"prefix": "mpfix",
+	"main_file": "ModpackFixes.lua",
+	"priority": 1000,
+	"badge_colour": "4A7A3A",
+	"badge_text_colour": "FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA-2008b)"]
+}
